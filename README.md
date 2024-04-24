@@ -29,8 +29,8 @@ Note that the doctors data is limited as it is trained on mock doctors data. Hen
 
 **Example of Feedback feature:**
 1) click on disease from the above list. For example I searched Migraine. It will show a few doctors who are the best for treating it. 
-2) click on give feedback button. and a fedback form will generate at the bottom. After clicking on submit feedback, you can give feedback to other doctors as well. The feedback along with rating will get saved in feedback.csv in datasets folder.
-3) the next time you oprn this feedback page, the doctors will be arranged in decreasing order of their ratings given by users.
+2) click on give feedback button and a feedback form will be generated at the bottom. After clicking on submit feedback, you can give feedback to other doctors as well. The feedback along with rating will get saved in feedback.csv in datasets folder.
+3) the next time you open this feedback page, the doctors will be arranged in decreasing order of their ratings given by users.
 
 **Example of Check doctor's availability feature:**
 1) Click on Check doctor's availability option in navigator bar. 
