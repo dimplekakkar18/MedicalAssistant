@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Check Doctors Schedule</title>
+<!-- Include jQuery library -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+<!-- Include Timepicker plugin -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jquery-timepicker/1.13.18/jquery.timepicker.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-timepicker/1.13.18/jquery.timepicker.min.js"></script>
+<style>
+    body {
+        font-family: Arial, sans-serif;
+        background-color: lavender;
+        margin: 0;
+        padding: 0;
+    }
+    .container {
+        width: 80%; /* Adjusted width */
+        max-width: 700px;
+        margin: 60px auto;
+        padding: 20px;
+        background-color: #f0e6ff;
+        border-radius: 10px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        position: relative; /* Position relative for absolute positioning of stethoscope */
+    }
+    h1 {
+        text-align: center;
+        color: #4b0082;
+    }
+    p {
+        text-align: center;
+        color: #6a5acd;
+        font-size: 18px;
+        margin-bottom: 20px;
+    }
+    .search-box {
+        padding-left: 30px;
+        margin-bottom: 40px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-right: 20px;
+    }
+    .search-box select {
+        width: calc(45% - 5px); /* Adjusted width */
+        padding: 10px;
+        border-radius: 5px;
+        border: 1px solid #ccc;
+        font-size: 16px;
+        box-sizing: border-box;
+    }
+    .search-box button {
+        padding: 10px 20px;
+        margin-left: 10px;
+        border: none;
+        background-color: #4b0082;
+        color: white;
+        border-radius: 5px;
+        cursor: pointer;
+        font-size: 16px;
+    }
+    table {
+        display: none; /* Hide the table by default */
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 20px;
+    }
+    th, td {
+        padding: 10px;
+        border-bottom: 1px solid #ddd;
+        text-align: left;
+    }
+    th {
+        background-color: #4b0082;
+        color: white;
+    }
+
+
+    .space {
+        width: 20px; /* Adjust as needed */
+    }
+    .background-elements {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        /* background-image: url('stethoscope.avif'); Path to your stethoscope image */
+        background-repeat: repeat;
+        opacity: 0.1; /* Adjust the opacity as needed */
+        pointer-events: none; /* Prevent interaction with background */
+    }
+</style>
+</head>
+<body>
+
+
+    
+    <div class="container">
+        <h1>Check Doctors Schedule</h1>
+        <p>Enter the disease for which you want to find a doctor and your preferred time slot.</p>
+        <div class="search-box">
+            <input type="text" id="diseaseInput" placeholder="Type Disease...">
+            <div class="space"></div> <!-- Added space -->
+            <select id="timeInput">
+                <option value="">Select Time Slot...</option>
+                <option value="">Select Time Slot...</option>
+                <option value="12:00 AM - 1:00 AM">12:00 AM - 1:00 AM</option>
+                <option value="1:00 AM - 2:00 AM">1:00 AM - 2:00 AM</option>
+                <option value="2:00 AM - 3:00 AM">2:00 AM - 3:00 AM</option>
+                <option value="3:00 AM - 4:00 AM">3:00 AM - 4:00 AM</option>
+                <option value="4:00 AM - 5:00 AM">4:00 AM - 5:00 AM</option>
+                <option value="5:00 AM - 6:00 AM">5:00 AM - 6:00 AM</option>
+                <option value="6:00 AM - 7:00 AM">6:00 AM - 7:00 AM</option>
+                <option value="7:00 AM - 8:00 AM">7:00 AM - 8:00 AM</option>
+                <option value="8:00 AM - 9:00 AM">8:00 AM - 9:00 AM</option>
+                <option value="9:00 AM - 10:00 AM">9:00 AM - 10:00 AM</option>
+                <option value="10:00 AM - 11:00 AM">10:00 AM - 11:00 AM</option>
+                <option value="11:00 AM - 12:00 PM">11:00 AM - 12:00 PM</option>
+                <option value="12:00 PM - 1:00 PM">12:00 PM - 1:00 PM</option>
+                <option value="1:00 PM - 2:00 PM">1:00 PM - 2:00 PM</option>
+                <option value="2:00 PM - 3:00 PM">2:00 PM - 3:00 PM</option>
+                <option value="3:00 PM - 4:00 PM">3:00 PM - 4:00 PM</option>
+                <option value="4:00 PM - 5:00 PM">4:00 PM - 5:00 PM</option>
+                <option value="5:00 PM - 6:00 PM">5:00 PM - 6:00 PM</option>
+                <option value="6:00 PM - 7:00 PM">6:00 PM - 7:00 PM</option>
+                <option value="7:00 PM - 8:00 PM">7:00 PM - 8:00 PM</option>
+                <option value="8:00 PM - 9:00 PM">8:00 PM - 9:00 PM</option>
+                <option value="9:00 PM - 10:00 PM">9:00 PM - 10:00 PM</option>
+                <option value="10:00 PM - 11:00 PM">10:00 PM - 11:00 PM</option>
+                <option value="11:00 PM - 12:00 AM">11:00 PM - 12:00 AM</option>
+                <!-- Add more options for other time slots -->
+            </select>
+            <button onclick="searchDoctors()">Search</button>
+        </div>
+        <table id="doctorsTable">
+            <thead>
+                <tr>
+                    <th>Disease</th>
+                    <th>Doctor</th>
+                    <th>Time Slot</th>
+                </tr>
+            </thead>
+            <tbody id="doctorsTableBody">
+                <!-- Doctors data will be inserted here -->
+            </tbody>
+        </table>
+        <div class="background-elements"></div>
+    </div>
+    
+    
+    <script>
+        $(document).ready(function(){
+            // Check if jQuery is loaded
+            if (typeof jQuery == 'undefined') {
+                console.log('jQuery is not loaded');
+            } else {
+                console.log('jQuery is loaded');
+                // Check if timepicker plugin is loaded
+                if ($.fn.timepicker) {
+                    $('.timepicker').timepicker({
+                        timeFormat: 'hh:mm TT',
+                        interval: 60,
+                        dropdown: true,
+                        scrollbar: true
+                    });
+                } else {
+                    console.log('Timepicker plugin is not loaded');
+                }
+            }
+        });
+
+    
+    // Function to fetch and parse CSV data
+    async function fetchData() {
+        const response = await fetch('../datasets/updated_file.csv');
+        const data = await response.text();
+        const rows = data.split('\n').slice(1); // Skip header row
+        return rows;
+    }
+
+    // Function to populate table with doctors' schedule
+    async function populateTable() {
+        const doctorsTableBody = document.getElementById('doctorsTableBody');
+        const rows = await fetchData();
+
+        console.log('Rows:', rows); // Log the rows array
+
+        rows.forEach(row => {
+            console.log('Row:', row); // Log each row
+            const columns = row.split(','); // Split the row string by commas
+            const disease = columns[2].replace(/\"/g, ''); // Extract disease from the third column
+            const doctor = columns[3].replace(/\"/g, ''); // Extract doctor from the fourth column
+            const timeSlot = columns[5].replace(/\"/g, ''); // Extract time slot from the fifth column
+
+            console.log('Time Slot:', timeSlot); // Log the time slot
+            console.log('Disease:', disease); // Log the disease
+            console.log('Doctor:', doctor); // Log the doctor
+
+            const newRow = `<tr>
+                <td>${disease}</td>
+                <td>${doctor}</td>
+                <td>${timeSlot}</td>
+            </tr>`;
+            doctorsTableBody.insertAdjacentHTML('beforeend', newRow);
+        });
+    }
+
+    
+    // Function to search doctors based on user input
+    function searchDoctors() {
+        var disease = document.getElementById("diseaseInput").value.trim().toLowerCase();
+        var timeSlot = document.getElementById("timeInput").value.trim().toLowerCase();
+        var rows = document.getElementById("doctorsTableBody").getElementsByTagName("tr");
+
+        for (var i = 0; i < rows.length; i++) {
+            var cols = rows[i].getElementsByTagName("td");
+            var diseaseMatch = cols[0].innerText.trim().toLowerCase().includes(disease);
+            var timeSlotMatch = cols[2].innerText.trim().toLowerCase().includes(timeSlot);
+            if (diseaseMatch && timeSlotMatch) {
+                rows[i].style.display = "";
+            } else {
+                rows[i].style.display = "none";
+            }
+        }
+
+        // Show the table after search
+        document.getElementById("doctorsTable").style.display = "table";
+    }
+    
+    // Populate table when the page loads
+    populateTable();
+    </script>
+    
+    </body>
+    </html>

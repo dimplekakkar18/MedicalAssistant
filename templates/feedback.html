@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Doctor Feedback</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f5f5f5;
+            color: #333;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f9f7f7;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        h1 {
+            color: #673ab7;
+            text-align: center;
+        }
+        input[type="text"] {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            box-sizing: border-box;
+        }
+        select {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            box-sizing: border-box;
+        }
+        button {
+            background-color: #673ab7;
+            color: #fff;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #512da8;
+        }
+        .doctor-list {
+            margin-top: 20px;
+        }
+        .doctor {
+            margin-bottom: 10px;
+            padding: 10px;
+            background-color: #fff;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+        .doctor h3 {
+            color: #673ab7;
+        }
+        .doctor p {
+            margin: 5px 0;
+        }
+        .feedback-form {
+            margin-top: 20px;
+        }
+        /* Light purple theme */
+        body {
+            background-color: #f5f3ff;
+        }
+        .container {
+            background-color: #f0e8ff;
+            box-shadow: 0 0 10px rgba(103, 58, 183, 0.1);
+        }
+        h1, h2, h3 {
+            color: #673ab7;
+        }
+        button, input[type="submit"] {
+            background-color: #673ab7;
+        }
+        button:hover, input[type="submit"]:hover {
+            background-color: #512da8;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Doctor Feedback</h1>
+        <form id="searchForm">
+            <input type="text" id="searchInput" placeholder="Search for a disease...">
+            <button type="button" onclick="searchDoctors()">Search</button>
+        </form>
+
+        <div class="doctor-list" id="doctorList"></div>
+
+        <div class="feedback-form" id="feedbackForm" style="display: none;">
+            <h2>Feedback Form</h2>
+            <form id="feedbackForm">
+                <input type="hidden" id="selectedDoctor">
+                <label for="rating">Rating (out of 5):</label>
+                <input type="number" id="rating" name="rating" min="1" max="5" required>
+                <label for="feedback">Feedback:</label>
+                <textarea id="feedback" name="feedback" rows="4" required></textarea>
+                <button type="submit">Submit Feedback</button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // Fetch data from doctors.csv
+        fetch('/datasets/doctors.csv')
+            .then(response => response.text())
+            .then(data => {
+                console.log("CSV Data:", data); // Log CSV data to console for debugging
+                let rows = data.split('\n').slice(1); // Skip header row
+                let doctors = rows.map(row => {
+                    let columns = row.split(',');
+                    return {
+                        disease: columns[2].replace(/"/g, '').trim(),
+                        doctors: columns[3].replace(/"/g, '').trim()
+                    };
+                });
+                window.doctors = doctors;
+                console.log("Parsed Doctors:", doctors); // Log parsed doctors to console for debugging
+            })
+            .catch(error => console.error('Error fetching data:', error));
+
+            function searchDoctors() {
+                console.log("Search button clicked"); // Log that the function is being called
+
+                // Capture the search term
+                var searchTerm = document.getElementById("searchInput").value.toLowerCase();
+                console.log("Search term:", searchTerm); // Log the search term
+
+                var doctorList = document.getElementById("doctorList");
+                doctorList.innerHTML = ""; // Clear previous search results
+
+                // Search doctors based on disease
+                var filteredDoctors = doctors.filter(doctor => doctor.disease.toLowerCase().includes(searchTerm));
+                console.log("Filtered doctors:", filteredDoctors); // Log the filtered doctors
+
+                // Display the list of doctors
+                if (filteredDoctors.length > 0) {
+                    filteredDoctors.forEach(doctor => {
+                        var doctorDiv = document.createElement("div");
+                        doctorDiv.classList.add("doctor");
+                        doctorDiv.innerHTML = `
+                            <h3>${doctor.disease}</h3>
+                            <p>${doctor.doctors}</p>
+                            <button onclick="showFeedbackForm('${doctor.disease}', '${doctor.doctors}')">Give Feedback</button>
+                        `;
+                        doctorList.appendChild(doctorDiv);
+                    });
+                } else {
+                    doctorList.innerHTML = "<p>No doctors found for the entered disease.</p>";
+            }
+        }
+
+
+        function showFeedbackForm(disease, doctor) {
+            document.getElementById("selectedDoctor").value = doctor;
+            document.getElementById("feedbackForm").style.display = "block";
+        }
+
+        document.getElementById("feedbackForm").addEventListener("submit", function(event) {
+            event.preventDefault();
+            var selectedDoctor = document.getElementById("selectedDoctor").value;
+            var rating = document.getElementById("rating").value;
+            var feedback = document.getElementById("feedback").value;
+
+            // Save the feedback data to a CSV file or send it to a server for processing
+            // Example:
+            // var feedbackData = {
+            //     doctor: selectedDoctor,
+            //     rating: rating,
+            //     feedback: feedback
+            // };
+            // console.log(feedbackData);
+
+            // You can add code here to save the feedback data
+            alert("Feedback submitted successfully!");
+            document.getElementById("feedbackForm").reset();
+            document.getElementById("feedbackForm").style.display = "none";
+        });
+    </script>
+</body>
+</html>
