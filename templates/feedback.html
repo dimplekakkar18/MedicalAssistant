@@ -86,6 +86,7 @@
             background-color: #512da8;
         }
     </style>
+
 </head>
 <body>
     <div class="container">
@@ -115,8 +116,7 @@
         fetch('/datasets/doctors.csv')
             .then(response => response.text())
             .then(data => {
-                console.log("CSV Data:", data); // Log CSV data to console for debugging
-                let rows = data.split('\n').slice(1); // Skip header row
+                let rows = data.split('\n').slice(1);
                 let doctors = rows.map(row => {
                     let columns = row.split(',');
                     return {
@@ -125,42 +125,116 @@
                     };
                 });
                 window.doctors = doctors;
-                console.log("Parsed Doctors:", doctors); // Log parsed doctors to console for debugging
             })
             .catch(error => console.error('Error fetching data:', error));
 
-            function searchDoctors() {
-                console.log("Search button clicked"); // Log that the function is being called
+        // Function to store user feedback in a CSV file
+        function storeFeedbackInCSV(selectedDoctor, rating, feedback) {
+            var feedbackData = `${selectedDoctor},${rating},${feedback}\n`;
 
-                // Capture the search term
-                var searchTerm = document.getElementById("searchInput").value.toLowerCase();
-                console.log("Search term:", searchTerm); // Log the search term
-
-                var doctorList = document.getElementById("doctorList");
-                doctorList.innerHTML = ""; // Clear previous search results
-
-                // Search doctors based on disease
-                var filteredDoctors = doctors.filter(doctor => doctor.disease.toLowerCase().includes(searchTerm));
-                console.log("Filtered doctors:", filteredDoctors); // Log the filtered doctors
-
-                // Display the list of doctors
-                if (filteredDoctors.length > 0) {
-                    filteredDoctors.forEach(doctor => {
-                        var doctorDiv = document.createElement("div");
-                        doctorDiv.classList.add("doctor");
-                        doctorDiv.innerHTML = `
-                            <h3>${doctor.disease}</h3>
-                            <p>${doctor.doctors}</p>
-                            <button onclick="showFeedbackForm('${doctor.disease}', '${doctor.doctors}')">Give Feedback</button>
-                        `;
-                        doctorList.appendChild(doctorDiv);
-                    });
+            // Send feedback data to the server
+            fetch('/save-feedback', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'text/csv'
+                },
+                body: feedbackData
+            })
+            .then(response => {
+                if (response.ok) {
+                    alert("Feedback submitted successfully!");
+                    document.getElementById("feedbackForm").reset();
+                    document.getElementById("feedbackForm").style.display = "none";
                 } else {
-                    doctorList.innerHTML = "<p>No doctors found for the entered disease.</p>";
-            }
+                    alert("Failed to submit feedback. Please try again.");
+                }
+            })
+            .catch(error => {
+                console.error('Error saving feedback:', error);
+                alert("Failed to submit feedback. Please try again.");
+            });
         }
 
+        // Function to sort doctors based on feedback
+        function sortDoctorsByFeedback(doctors, feedback) {
+            // Calculate average rating for each doctor
+            let doctorRatings = {};
+            feedback.forEach(entry => {
+                let doctor = entry.doctor;
+                let rating = parseFloat(entry.rating);
+                if (!doctorRatings[doctor]) {
+                    doctorRatings[doctor] = { sum: rating, count: 1 };
+                } else {
+                    doctorRatings[doctor].sum += rating;
+                    doctorRatings[doctor].count++;
+                }
+            });
 
+            for (let doctor in doctorRatings) {
+                doctorRatings[doctor].average = doctorRatings[doctor].sum / doctorRatings[doctor].count;
+            }
+
+            // Sort doctors based on average rating
+            doctors.sort((a, b) => {
+                // Ensure doctor has feedback data before accessing its average rating
+                let aAverage = doctorRatings[a.doctors] ? doctorRatings[a.doctors].average : 0;
+                let bAverage = doctorRatings[b.doctors] ? doctorRatings[b.doctors].average : 0;
+
+                console.log(`Doctor ${a.doctors}: Average Rating ${aAverage}`);
+                console.log(`Doctor ${b.doctors}: Average Rating ${bAverage}`);
+                
+                return bAverage - aAverage;
+            });
+
+            console.log("Sorted Doctors:", doctors);
+
+            return doctors;
+        }
+
+        function searchDoctors() {
+            var searchTerm = document.getElementById("searchInput").value.toLowerCase();
+            var doctorList = document.getElementById("doctorList");
+            doctorList.innerHTML = "";
+
+            // Filter doctors based on the search term
+            var filteredDoctors = doctors.filter(doctor => doctor.disease.toLowerCase().includes(searchTerm));
+
+            if (filteredDoctors.length > 0) {
+                // Fetch feedback data for the specific disease
+                fetch(`/datasets/feedback.csv`)
+                    .then(response => response.text())
+                    .then(data => {
+                        let feedbackRows = data.split('\n').slice(1);
+                        let feedback = feedbackRows.map(row => {
+                            let columns = row.split(',');
+                            return {
+                                doctor: columns[0],
+                                rating: parseFloat(columns[1]),
+                                feedback: columns[2]
+                            };
+                        });
+
+                        // Sort doctors based on feedback
+                        let sortedDoctors = sortDoctorsByFeedback(filteredDoctors, feedback);
+
+                        // Display sorted list of doctors
+                        sortedDoctors.forEach(doctor => {
+                            var doctorDiv = document.createElement("div");
+                            doctorDiv.classList.add("doctor");
+                            doctorDiv.innerHTML = `
+                                <h3>${doctor.disease}</h3>
+                                <p>${doctor.doctors}</p>
+                                <button onclick="showFeedbackForm('${doctor.disease}', '${doctor.doctors}')">Give Feedback</button>
+                            `;
+                            doctorList.appendChild(doctorDiv);
+                        });
+                    })
+                    .catch(error => console.error('Error fetching feedback data:', error));
+            } else {
+                doctorList.innerHTML = "<p>No doctors found for the entered disease.</p>";
+            }
+        }
+        
         function showFeedbackForm(disease, doctor) {
             document.getElementById("selectedDoctor").value = doctor;
             document.getElementById("feedbackForm").style.display = "block";
@@ -172,16 +246,8 @@
             var rating = document.getElementById("rating").value;
             var feedback = document.getElementById("feedback").value;
 
-            // Save the feedback data to a CSV file or send it to a server for processing
-            // Example:
-            // var feedbackData = {
-            //     doctor: selectedDoctor,
-            //     rating: rating,
-            //     feedback: feedback
-            // };
-            // console.log(feedbackData);
+            storeFeedbackInCSV(selectedDoctor, rating, feedback);
 
-            // You can add code here to save the feedback data
             alert("Feedback submitted successfully!");
             document.getElementById("feedbackForm").reset();
             document.getElementById("feedbackForm").style.display = "none";
